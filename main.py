@@ -7,6 +7,8 @@ from email.message import EmailMessage
 from datetime import datetime
 from dotenv import load_dotenv
 import json
+import argparse
+
 
 # Load environment variables
 load_dotenv()
@@ -81,9 +83,13 @@ class PrepBot:
         plain = "Hey Shruthi! Here are your tasks for today:\n\n"
         html = "<html><body><h2>PrepBuddy — Daily Reminder</h2><ul>"
 
+        # for task, status in self.task_manager.tasks.items():
+        #     plain += f"- {task}: {status}\n"
+        #     html += f"<li><b>{task}:</b> {status}</li>"
         for task, status in self.task_manager.tasks.items():
-            plain += f"- {task}: {status}\n"
-            html += f"<li><b>{task}:</b> {status}</li>"
+            color = "green" if status.lower() == "done" else "orange"
+            html += f"<li><b>{task}:</b> <span style='color:{color};'>{status}</span></li>"
+
 
         plain += "\n🎉 Keep going, you got this!"
         html += f"</ul><p><i>Sent at {today}</i></p></body></html>"
@@ -91,12 +97,44 @@ class PrepBot:
         self.email_sender.send_email(subject, plain, html)
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(description="PrepBot CLI")
+    parser.add_argument(
+        "--update",
+        nargs="+",  # Allow multiple updates
+        help='Update a task in format: "TaskName status" e.g., "Java done"'
+    )
+    return parser.parse_args()
+
+def update_task(self, task_name, status):
+    if task_name in self.tasks:
+        self.tasks[task_name] = status
+        self.save_tasks()
+    else:
+        print(f"⚠️ Task '{task_name}' not found. Skipped.")
+
+
+
 # ---------------- Main ----------------
 def main():
+    args = parse_args()  # Get CLI arguments
+
     email_sender = EmailSender(EMAIL_ADDRESS, EMAIL_PASSWORD, RECIPIENT)
     task_manager = TaskManager()
     bot = PrepBot(email_sender, task_manager)
 
+    # If --update is provided, update the task first
+    if args.update:
+        for item in args.update:   # item is like "Java done"
+            try:
+                task_name, status = item.split()  # split each string individually
+                task_manager.update_task(task_name, status)
+                print(f"✅ Task updated: {task_name} -> {status}")
+            except ValueError:
+                print(f"❌ Invalid format: {item}. Use: TaskName status")
+        
+
+    # Send the daily email
     bot.send_daily_reminder()
 
 
