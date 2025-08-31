@@ -1,7 +1,17 @@
 {
-    "Revise projects": "pending",
-    "Java": "done",
-    "DSA": "done",
-    "AWS": "pending",
-    "Python/sql": "pending"
+  "tasks": {
+    "Java": false,
+    "DSA": false,
+    "Revise Projects": false
+  },
+  "planned_for_today": ["Java", "DSA"],
+  "history": [
+    {
+      "date": "2025-08-31",
+      "updates": {
+        "Java": "50% complete",
+        "DSA": "done"
+      }
+    }
+  ]
 }
